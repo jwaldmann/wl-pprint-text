@@ -113,9 +113,8 @@ module Text.PrettyPrint.Leijen.Text (
    Pretty(..),
 
    -- * Rendering
-   SimpleDoc(..), renderPretty, renderCompact, renderOneLine,
+   SimpleDoc(..), renderPretty, renderCompact, renderOneLine, renderWide,
    displayB, displayT, displayTStrict, displayIO, putDoc, hPutDoc
-
    ) where
 
 import Prelude        ()
@@ -918,7 +917,14 @@ data Docs = Nil
 --   is lower or higher, the ribbon width will be 0 or @width@
 --   respectively.
 renderPretty :: Float -> Int -> Doc -> SimpleDoc
-renderPretty rfrac w doc
+renderPretty = renderWith fits
+
+-- | render for infinite page width (never introduce line breaks)
+renderWide :: Doc -> SimpleDoc
+renderWide = renderWith ( \ _ _ -> True ) 1 1
+
+renderWith :: (Int64 -> SimpleDoc -> Bool) -> Float -> Int -> Doc -> SimpleDoc
+renderWith fits rfrac w doc
  = best 0 0 (Cons 0 doc Nil)
     where
       -- r :: the ribbon width in characters
